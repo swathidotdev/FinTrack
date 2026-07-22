@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex gap-2 mb-4">
+    <a href="{{ url_for('main.add') }}" class="btn btn-primary">+ Add Transaction</a>
+    <a href="{{ url_for('main.import_csv') }}" class="btn btn-outline-secondary">Import CSV</a>
+    <a href="{{ url_for('main.budgets') }}" class="btn btn-outline-secondary">Manage Budgets</a>
+</div>
+
+<h2>Summary for {{ current_month }}</h2>
+<p class="fs-4"><strong>Total spent this month: ₹{{ "%.2f"|format(month_total) }}</strong></p>
+
+{% for category, status in budget_status.items() %}
+    {% if status.over %}
+    <div class="alert alert-danger py-2">
+        ⚠ Over budget in <strong>{{ category }}</strong>: spent ₹{{ "%.2f"|format(status.spent) }} of ₹{{ "%.2f"|format(status.limit) }} limit
+    </div>
+    {% endif %}
+{% endfor %}
+
+<div class="row mb-4">
+    <div class="col-md-5">
+        <canvas id="categoryChart" width="300" height="300"></canvas>
+    </div>
+    <div class="col-md-7">
+        <table class="table table-striped">
+            <thead><tr><th>Category</th><th>Amount</th></tr></thead>
+            <tbody>
+            {% for category, total in category_totals.items() %}
+            <tr><td>{{ category }}</td><td>₹{{ "%.2f"|format(total) }}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h2>All Transactions</h2>
+<table class="table table-bordered table-sm">
+    <thead>
+        <tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th></tr>
+    </thead>
+    <tbody>
+    {% for t in transactions %}
+    <tr>
+        <td>{{ t.date }}</td>
+        <td>{{ t.description }}</td>
+        <td><span class="badge bg-secondary">{{ t.category }}</span></td>
+        <td>₹{{ "%.2f"|format(t.amount) }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+    const categoryLabels = {{ category_totals.keys()|list|tojson }};
+    const categoryValues = {{ category_totals.values()|list|tojson }};
+
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'pie',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                data: categoryValues,
+                backgroundColor: [
+                    '#4e79a7', '#f28e2b', '#e15759', '#76b7b2',
+                    '#59a14f', '#edc948', '#b07aa1', '#ff9da7'
+                ]
+            }]
+        },
+        options: {
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+</script>
+{% endblock %}

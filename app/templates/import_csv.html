@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Import Transactions from CSV</h2>
+
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<p class="text-muted">Expected columns: <code>date,description,amount</code></p>
+
+<form method="POST" enctype="multipart/form-data" class="mb-3" style="max-width: 400px;">
+    <div class="mb-3">
+        <input type="file" name="csv_file" accept=".csv" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Import</button>
+</form>
+
+<a href="{{ url_for('main.index') }}">← Back to dashboard</a>
+{% endblock %}
