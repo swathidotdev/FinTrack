@@ -59,19 +59,19 @@ def add():
         amount_raw = request.form.get("amount", "").strip()
 
         if not date or not description or not amount_raw:
-            return render_template("add_transaction.html", error="All fields are required.")
+            return render_template("add_transaction.html", error="All fields are required.", today=date_module.today().isoformat())
 
         try:
             amount = float(amount_raw)
         except ValueError:
-            return render_template("add_transaction.html", error="Amount must be a number.")
+            return render_template("add_transaction.html", error="Amount must be a number.", today=date_module.today().isoformat())
 
         category = categorize_transaction(description)
         add_transaction(user_id, date, description, amount, category)
 
         return redirect(url_for("main.index"))
 
-    return render_template("add_transaction.html", error=None)
+    return render_template("add_transaction.html", error=None, today=date_module.today().isoformat())
 
 
 @bp.route("/import", methods=["GET", "POST"])
