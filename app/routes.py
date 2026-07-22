@@ -1,8 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, session
 from app.models import (
     get_all_transactions, add_transaction, add_transactions_bulk,
     get_transactions_by_month, set_budget, get_budgets,
 )
+from app.auth import login_required
 from project import categorize_transaction, parse_csv_import, calculate_monthly_total
 from datetime import date as date_module
 import os
@@ -12,11 +13,13 @@ bp = Blueprint("main", __name__)
 
 
 @bp.route("/")
+@login_required
 def index():
-    transactions = get_all_transactions()
+    user_id = session.get("user_id")
+    transactions = get_all_transactions(user_id)
 
     current_month = date_module.today().strftime("%Y-%m")
-    month_transactions = get_transactions_by_month(current_month)
+    month_transactions = get_transactions_by_month(user_id, current_month)
 
     month_total = calculate_monthly_total(month_transactions, current_month)
 
@@ -26,7 +29,7 @@ def index():
     category_totals = {cat: round(total, 2) for cat, total in category_totals.items()}
 
     # Compare spending against budgets to flag over-limit categories
-    budgets = {b["category"]: b["monthly_limit"] for b in get_budgets()}
+    budgets = {b["category"]: b["monthly_limit"] for b in get_budgets(user_id)}
     budget_status = {}
     for category, limit in budgets.items():
         spent = category_totals.get(category, 0)
@@ -47,7 +50,9 @@ def index():
 
 
 @bp.route("/add", methods=["GET", "POST"])
+@login_required
 def add():
+    user_id = session.get("user_id")
     if request.method == "POST":
         date = request.form.get("date", "").strip()
         description = request.form.get("description", "").strip()
@@ -62,7 +67,7 @@ def add():
             return render_template("add_transaction.html", error="Amount must be a number.")
 
         category = categorize_transaction(description)
-        add_transaction(date, description, amount, category)
+        add_transaction(user_id, date, description, amount, category)
 
         return redirect(url_for("main.index"))
 
@@ -70,7 +75,9 @@ def add():
 
 
 @bp.route("/import", methods=["GET", "POST"])
+@login_required
 def import_csv():
+    user_id = session.get("user_id")
     if request.method == "POST":
         file = request.files.get("csv_file")
 
@@ -92,7 +99,7 @@ def import_csv():
         for t in transactions:
             t["category"] = categorize_transaction(t["description"])
 
-        add_transactions_bulk(transactions)
+        add_transactions_bulk(user_id, transactions)
 
         return redirect(url_for("main.index"))
 
@@ -100,20 +107,22 @@ def import_csv():
 
 
 @bp.route("/budgets", methods=["GET", "POST"])
+@login_required
 def budgets():
+    user_id = session.get("user_id")
     if request.method == "POST":
         category = request.form.get("category", "").strip()
         limit_raw = request.form.get("monthly_limit", "").strip()
 
         if not category or not limit_raw:
-            return render_template("budgets.html", error="Both fields are required.", budgets=get_budgets())
+            return render_template("budgets.html", error="Both fields are required.", budgets=get_budgets(user_id))
 
         try:
             limit = float(limit_raw)
         except ValueError:
-            return render_template("budgets.html", error="Limit must be a number.", budgets=get_budgets())
+            return render_template("budgets.html", error="Limit must be a number.", budgets=get_budgets(user_id))
 
-        set_budget(category, limit)
+        set_budget(user_id, category, limit)
         return redirect(url_for("main.budgets"))
 
-    return render_template("budgets.html", error=None, budgets=get_budgets())
+    return render_template("budgets.html", error=None, budgets=get_budgets(user_id))

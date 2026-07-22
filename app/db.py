@@ -15,20 +15,41 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
 
+    # Drop old tables if they exist (for migration from old schema)
+    cursor.execute("DROP TABLE IF EXISTS transactions")
+    cursor.execute("DROP TABLE IF EXISTS budgets")
+    cursor.execute("DROP TABLE IF EXISTS users")
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+    """)
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
             date TEXT NOT NULL,
             description TEXT NOT NULL,
             amount REAL NOT NULL,
-            category TEXT NOT NULL
+            category TEXT NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS budgets (
-            category TEXT PRIMARY KEY,
-            monthly_limit REAL NOT NULL
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            category TEXT NOT NULL,
+            monthly_limit REAL NOT NULL,
+            UNIQUE(user_id, category),
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
 
