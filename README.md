@@ -1,5 +1,5 @@
 # FinTech — A Personal Budget Tracker
-#### Video Demo: <YOUR YOUTUBE URL HERE>
+#### Video Demo: https://www.youtube.com/watch?v=jE4lpyycN_g
 #### Description:
 
 FinTech is a multi-user web application for tracking personal expenses,
@@ -96,12 +96,3 @@ in-memory stream. This let me reuse the exact same tested function for
 both the CLI/test path and the web upload path instead of maintaining two
 separate parsers.
 
-## Known limitations / future improvements
-
-Category keyword matching is simple substring matching rather than
-ML-based classification — it works well for common merchants but can
-misclassify unfamiliar ones. A natural next step would be letting a user
-correct a miscategorized transaction and have the app remember that
-correction for next time. There's currently no password reset flow or
-email verification, which would be needed before this could be used by
-real strangers rather than as a personal/demo tool.
