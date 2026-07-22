@@ -1,8 +1,8 @@
-# FinTech — A Personal Budget Tracker
-#### Video Demo: https://www.youtube.com/watch?v=jE4lpyycN_g
+# FinTrack — A Personal Budget Tracker
+#### Video Demo: https://www.youtube.com/watch?v=oGCiD8wxShk
 #### Description:
 
-FinTech is a multi-user web application for tracking personal expenses,
+FinTrack is a multi-user web application for tracking personal expenses,
 built with Python, Flask, and SQLite. Each user creates an account, logs
 in, and gets their own private space to record transactions, import
 spending history in bulk from a CSV file, view monthly totals broken down
@@ -11,7 +11,7 @@ by category, and set budget limits that trigger a warning when exceeded.
 I built this because most budgeting tools are either too heavyweight
 (linking real bank accounts, monthly subscriptions) or too manual (a bare
 spreadsheet where every transaction has to be typed and categorized by
-hand). FinTech sits in between: it automates the tedious part — guessing
+hand). FinTrack sits in between: it automates the tedious part — guessing
 a transaction's category from its description — while keeping all data
 local, free, and under the user's control in a single SQLite file.
 
